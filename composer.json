@@ -1,0 +1,15 @@
+{
+    "name": "danielmme/urbandatabrasil_userform",
+    "type": "drupal-module",
+    "license": "GPL-2.0-or-later",
+    "description": "Custom module for Urbandata Project",
+    "authors": [
+        {
+            "name": "DanielMM",
+            "email": "medeiros.danielm@gmail.com"
+        }
+    ],
+    "keywords": [
+    ],
+    "minimum-stability": "dev"
+}
