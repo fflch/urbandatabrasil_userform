@@ -6,7 +6,7 @@
       var email = $("#email").val();
       $.ajax({
         type: "POST",
-        url: "valida_email",
+        url: "/valida_email",
         data: dados,
         success: function( data ) {
           if (data.retorno == false) {
@@ -19,7 +19,7 @@
       return false;
     });
 
-    $('#webform-submission-user-add-form').submit(function(){
+    $('#webform-submission-user-add-form').submit(function(event){
       var dados = $( this ).serialize();
         $.ajax({
         type: "POST",
@@ -27,11 +27,12 @@
         data: dados,
         success: function( data ) {
           if (data.retorno != null) {
-            window.location.href = '/node/add';
+            // $('#webform-submission-user-add-form').submit();
+            // window.location.href = '/node/add';
           }
         }
       });
-      return false;
+      return true;
     });
 
   });
