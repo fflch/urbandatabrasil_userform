@@ -58,7 +58,9 @@ function urbandatabrasil_userform_node_presave(EntityInterface $node) {
     if (method_exists($session, 'get')) {
       $value = $session->get('usuario_validado');
       $value = Html::escape($value);
-      $node->set('field_autor', $value);
+      if ($node->hasField('field_autor')) {
+        $node->set('field_autor', $value);
+      } 
     }
   }
 }

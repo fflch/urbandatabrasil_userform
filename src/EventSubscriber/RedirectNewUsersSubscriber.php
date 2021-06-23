@@ -44,6 +44,11 @@ class RedirectNewUsersSubscriber implements EventSubscriberInterface {
 
     $current_path = $this->pathCurrent->getPath();
     $session = \Drupal::request()->getSession()->get('usuario_validado');
+    $logged_in = \Drupal::currentUser()->isAuthenticated();
+   
+    if ($logged_in) {
+      return;
+    }
 
     if ($current_path != '/node/add') {
       return;
