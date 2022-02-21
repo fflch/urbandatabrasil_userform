@@ -18,11 +18,17 @@
             <h2 class="blue">Acesso</h2>
           {% endtrans %}
           {% trans %}
-            <p>Para garantir a fidelidade dos dados que compõem o nosso banco bibliográfico, apenas pesquisadoras/es registrada/os podem inserir suas produções científicas.<br>
-              Por favor, informe seu email cadastrado no campo abaixo e clique em “enviar”.<br>
-              Caso seja o seu primeiro acesso, pedimos que preencha o formulário e siga as instruções.</p>
+            <p>Para garantir a fidelidade dos dados que compõem o nosso banco bibliográfico, apenas pesquisadoras/es registrada/os podem inserir suas produções científicas.
+Por favor, informe seu email cadastrado no campo abaixo e clique em “enviar”. Caso seja o seu primeiro acesso, pedimos que preencha o <b>formulário de autoria</b> e siga as instruções.</p>
           {% endtrans %}
-
+          
+            {% trans %}
+            <h2 class="blue">Atenção</h2>
+          {% endtrans %}
+          {% trans %}
+            <p>O formulário de produção científica preenchido será analisado dentro de alguns dias pela nossa equipe e, se aprovado, estará disponível para consulta em nosso site. </p>
+          {% endtrans %}
+          
             <form id="controle-acesso" method="post">
               <div class="form-group">
                 <label for="exampleInputEmail">e-mail*</label>
@@ -34,7 +40,7 @@
 
           <p>{% trans %}
               <br>
-            Para esclarecer dúvidas e outras informações, escreva para <a href="mailto:contato@urbandata.org.br">contato@urbandata.org.br</a>
+            Para esclarecer dúvidas e outras informações, escreva para <a href="mailto:brasilurbandata@gmail.com">brasilurbandata@gmail.com</a>
             {% endtrans %}</p>
         </div>
 
