@@ -34,6 +34,9 @@ class DefaultForm extends FormBase {
     ];
     $form['#theme'] = 'urbandata_template';
 
+    // ESTA É A LINHA MÁGICA QUE GARANTE QUE O JS CARREGA SEMPRE
+    $form['#attached']['library'][] = 'urbandatabrasil_userform/form';
+
     return $form;
   }
 

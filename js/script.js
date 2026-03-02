@@ -1,39 +1,65 @@
-(function($) {
-  $(document).ready(function(){
-    $('#controle-acesso').submit(function(event){
-      event.preventDefault(); //prevent default action 
-      var dados = $( this ).serialize();
-      var email = $("#email").val();
-      $.ajax({
-        type: "POST",
-        url: "/valida_email",
-        data: dados,
-        success: function( data ) {
-          if (data.retorno == false) {
-            window.location.href = '/form/user?email='+email;
-          }else {
-            window.location.href = '/node/add';
-          }
-        }
-      });
-      return false;
-    });
+(function (Drupal) {
+  Drupal.behaviors.urbandataForm = {
+    attach: function (context, settings) {
+      
+      const formControleAcesso = context.querySelector('#controle-acesso');
+      
+      if (formControleAcesso && !formControleAcesso.dataset.jsAttached) {
+        formControleAcesso.dataset.jsAttached = 'true'; 
+        
+        formControleAcesso.addEventListener('submit', function (event) {
+          event.preventDefault(); 
+          
+          const emailInput = document.getElementById('email');
+          const emailValue = emailInput ? emailInput.value : '';
+          const formData = new URLSearchParams(new FormData(this));
 
-    $('#webform-submission-user-add-form').submit(function(event){
-      var dados = $( this ).serialize();
-        $.ajax({
-        type: "POST",
-        url: "/configura_sessao",
-        data: dados,
-        success: function( data ) {
-          if (data.retorno != null) {
-            // $('#webform-submission-user-add-form').submit();
-            // window.location.href = '/node/add';
-          }
-        }
-      });
-      return true;
-    });
+          // Usamos Drupal.url() para respeitar o /pt-br/
+          fetch(Drupal.url('valida_email'), {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.retorno === false) {
+              window.location.href = Drupal.url('form/user') + '?email=' + encodeURIComponent(emailValue);
+            } else {
+              window.location.href = Drupal.url('node/add');
+            }
+          })
+          .catch(error => console.error('Erro ao validar email:', error));
+        });
+      }
 
-  });
-}(jQuery));
+      const formWebform = context.querySelector('#webform-submission-user-add-form');
+      if (formWebform && !formWebform.dataset.jsAttached) {
+        formWebform.dataset.jsAttached = 'true';
+        
+        formWebform.addEventListener('submit', function (event) {
+          event.preventDefault();
+          
+          const formData = new URLSearchParams(new FormData(this));
+
+          fetch(Drupal.url('configura_sessao'), {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.retorno !== null && data.retorno !== false) {
+              window.location.href = Drupal.url('node/add');
+            }
+          })
+          .catch(error => console.error('Erro ao configurar sessão:', error));
+        });
+      }
+
+    }
+  };
+})(Drupal);

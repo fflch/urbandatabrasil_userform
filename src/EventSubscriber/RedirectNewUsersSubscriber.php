@@ -3,7 +3,7 @@
 namespace Drupal\urbandatabrasil_userform\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Drupal\Core\Path\CurrentPathStack;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -30,6 +30,7 @@ class RedirectNewUsersSubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
+    // Escuta os eventos do Kernel usando o novo padrão Symfony.
     $events['kernel.request'] = ['newUserRedirection'];
     return $events;
   }
@@ -37,18 +38,15 @@ class RedirectNewUsersSubscriber implements EventSubscriberInterface {
   /**
    * This method is called when the kernel.request is dispatched.
    *
-   * @param \Symfony\Component\EventDispatcher\Event $event
-   *   The dispatched event.
+   * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
+   * The dispatched event.
    */
-  public function newUserRedirection(Event $event) {
+  public function newUserRedirection(RequestEvent $event) {
 
     $current_path = $this->pathCurrent->getPath();
-    $session = \Drupal::request()->getSession()->get('usuario_validado');
-    $logged_in = \Drupal::currentUser()->isAuthenticated();
-   
-    if ($logged_in) {
-      return;
-    }
+    
+    // É mais seguro pegar a sessão diretamente do request injetado no evento
+    $session = $event->getRequest()->getSession()->get('usuario_validado');
 
     if ($current_path != '/node/add') {
       return;
@@ -58,7 +56,7 @@ class RedirectNewUsersSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    \Drupal::messenger()->addMessage('Faça parte da base de dados bibliográficos do UrbanData-Brasil!', 'status', TRUE);
+    \Drupal::messenger()->addMessage('Bem vindo ao site do Urbandata.', 'status', TRUE);
     $response = new RedirectResponse("/cadastre-se", 301);
     $event->setResponse($response);
 

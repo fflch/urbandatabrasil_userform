@@ -9,32 +9,27 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-
 /**
  * Class ValidaEmailController.
  */
 class ValidaEmailController extends ControllerBase {
 
   /**
-   * Drupal\Core\Database\Connection definition.
-   *
    * @var \Drupal\Core\Database\Connection
    */
   protected $database;
 
   /**
-   * Symfony\Component\HttpFoundation\Request;.
-   *
-   * @var Symfony\Component\HttpFoundation\Requestn
+   * @var \Symfony\Component\HttpFoundation\RequestStack
    */
-  protected $request;
+  protected $requestStack;
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(Connection $database, RequestStack $request) {
+  public function __construct(Connection $database, RequestStack $request_stack) {
     $this->database = $database;
-    $this->request = $request;
+    $this->requestStack = $request_stack;
   }
 
   /**
@@ -51,42 +46,50 @@ class ValidaEmailController extends ControllerBase {
    * {@inheritdoc}
    */
   public function validate() {
+    // Usa a requisição atual do Symfony em vez de acessar $_POST diretamente
+    $current_request = $this->requestStack->getCurrentRequest();
+    $email_post = $current_request->request->get('email');
 
+    $email = false;
 
-    if (!empty($_POST['email'])) {
-      $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-      $query =  $this->database->select('webform_submission_data', 'webform');
+    if (!empty($email_post)) {
+      $email = filter_var($email_post, FILTER_SANITIZE_EMAIL);
+      $query = $this->database->select('webform_submission_data', 'webform');
       $query->condition('webform.name', 'email', '=');
       $query->condition('webform.value', $email, '=');
       $query->fields('webform', ['sid']);
       $sid = $query->execute()->fetchField();
+      
       if (!empty($sid)) {
-        $webformSubmission = \drupal::entityTypeManager()->getStorage('webform_submission')->load($sid);
+        // Correção do "\drupal" para "\Drupal"
+        $webformSubmission = \Drupal::entityTypeManager()->getStorage('webform_submission')->load($sid);
         $email = $webformSubmission->getData()['email'];
-        $session = \Drupal::request()->getSession();
+        $session = $current_request->getSession();
         $session->set('usuario_validado', $email);
-      }
-      else {
+      } else {
         $email = false;
       }
     }
+    
     $response['retorno'] = $email;
-    return new JsonResponse( $response );
+    return new JsonResponse($response);
   }
 
   /**
    * {@inheritdoc}
    */
   public function sessao(Request $request) {
-
     $email = false;
-    if (!empty($_POST['email'])) {
-      $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-      $session = \Drupal::request()->getSession();
+    $email_post = $request->request->get('email');
+
+    if (!empty($email_post)) {
+      $email = filter_var($email_post, FILTER_SANITIZE_EMAIL);
+      $session = $request->getSession();
       $session->set('usuario_validado', $email);
     }
+    
     $response['retorno'] = $email;
-    return new JsonResponse( $response );
+    return new JsonResponse($response);
   }
 
 }
