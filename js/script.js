@@ -1,39 +1,57 @@
-(function($) {
-  $(document).ready(function(){
-    $('#controle-acesso').submit(function(event){
-      event.preventDefault(); //prevent default action 
-      var dados = $( this ).serialize();
-      var email = $("#email").val();
-      $.ajax({
-        type: "POST",
-        url: "/valida_email",
-        data: dados,
-        success: function( data ) {
-          if (data.retorno == false) {
-            window.location.href = '/form/user?email='+email;
-          }else {
-            window.location.href = '/node/add';
-          }
-        }
-      });
-      return false;
-    });
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Primeiro formulário: controle-acesso
+  const formControleAcesso = document.getElementById('controle-acesso');
+  if (formControleAcesso) {
+    formControleAcesso.addEventListener('submit', function(event) {
+      event.preventDefault(); // Previne a ação padrão
+      
+      const emailInput = document.getElementById('email');
+      const emailValue = emailInput ? emailInput.value : '';
+      const formData = new URLSearchParams(new FormData(this)); // Simula o .serialize() do jQuery
 
-    $('#webform-submission-user-add-form').submit(function(event){
-      var dados = $( this ).serialize();
-        $.ajax({
-        type: "POST",
-        url: "/configura_sessao",
-        data: dados,
-        success: function( data ) {
-          if (data.retorno != null) {
-            // $('#webform-submission-user-add-form').submit();
-            // window.location.href = '/node/add';
-          }
+      fetch('/valida_email', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
         }
-      });
-      return true;
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.retorno === false) {
+          window.location.href = '/form/user?email=' + encodeURIComponent(emailValue);
+        } else {
+          window.location.href = '/node/add';
+        }
+      })
+      .catch(error => console.error('Erro ao validar email:', error));
     });
+  }
 
-  });
-}(jQuery));
+  // Segundo formulário: webform-submission-user-add-form
+  const formWebform = document.getElementById('webform-submission-user-add-form');
+  if (formWebform) {
+    formWebform.addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      const formData = new URLSearchParams(new FormData(this));
+
+      fetch('/configura_sessao', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.retorno !== null && data.retorno !== false) {
+          window.location.href = '/node/add';
+        }
+      })
+      .catch(error => console.error('Erro ao configurar sessão:', error));
+    });
+  }
+
+});

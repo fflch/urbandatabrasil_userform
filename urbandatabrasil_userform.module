@@ -41,7 +41,7 @@ function urbandatabrasil_userform_theme() {
  * {@inheritdoc}
  */
 function urbandatabrasil_userform_page_attachments(&$attachments) {
-  $path = \drupal::request()->getPathInfo();
+  $path = \Drupal::request()->getPathInfo();
   if ($path === '/cadastre-se' || $path === '/form/user') {
     $attachments['#attached']['library'][] = 'urbandatabrasil_userform/form';
   }

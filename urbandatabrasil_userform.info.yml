@@ -1,7 +1,7 @@
 name: 'Urbandata UserForm'
 type: module
 description: 'Custom module for Urbandata Project'
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^8 || ^9 || ^10 || ^11
 package: Faculdade de Filosofia Letras e Ciências Humanas
 dependencies:
   - webform
