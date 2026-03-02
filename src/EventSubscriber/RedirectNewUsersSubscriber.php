@@ -56,7 +56,7 @@ class RedirectNewUsersSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    \Drupal::messenger()->addMessage('Faça parte da base de dados bibliográficos do UrbanData-Brasil!', 'status', TRUE);
+    \Drupal::messenger()->addMessage('Bem vindo ao site do Urbandata.', 'status', TRUE);
     $response = new RedirectResponse("/cadastre-se", 301);
     $event->setResponse($response);
 
