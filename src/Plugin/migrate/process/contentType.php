@@ -30,6 +30,7 @@ class contentType extends ProcessPluginBase {
       "Relatório" =>  "producoes_tecnicas",
     ];
 
+    $bundle = NULL;
     foreach($array as $key => $element) {
       if ($key == $value) {
         $bundle = $element;

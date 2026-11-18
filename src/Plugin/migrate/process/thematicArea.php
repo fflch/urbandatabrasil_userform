@@ -154,7 +154,7 @@ class thematicArea extends ProcessPluginBase {
     if (!empty($name) && !empty($vocabulary)) {
       $properties['name'] = $name;
       $properties['vid'] = $vocabulary;
-      $terms = \Drupal::entityManager()->getStorage('taxonomy_term')->loadByProperties($properties);
+      $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties($properties);
       $term = reset($terms);
       $tid = is_object($term) ? $term->id() : null;
     }

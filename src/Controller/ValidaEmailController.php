@@ -7,8 +7,6 @@ use Drupal\Core\Database\Connection;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
-
 
 /**
  * Class ValidaEmailController.
@@ -16,25 +14,17 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class ValidaEmailController extends ControllerBase {
 
   /**
-   * Drupal\Core\Database\Connection definition.
+   * The database connection.
    *
    * @var \Drupal\Core\Database\Connection
    */
   protected $database;
 
   /**
-   * Symfony\Component\HttpFoundation\Request;.
-   *
-   * @var Symfony\Component\HttpFoundation\Requestn
+   * Constructs a new ValidaEmailController object.
    */
-  protected $request;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(Connection $database, RequestStack $request) {
+  public function __construct(Connection $database) {
     $this->database = $database;
-    $this->request = $request;
   }
 
   /**
@@ -42,51 +32,49 @@ class ValidaEmailController extends ControllerBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('database'),
-      $container->get('request_stack')
+      $container->get('database')
     );
   }
 
   /**
-   * {@inheritdoc}
+   * Checks if the e-mail has a user webform submission.
    */
-  public function validate() {
+  public function validate(Request $request) {
+    $email = FALSE;
+    $posted = (string) $request->request->get('email', '');
 
-
-    if (!empty($_POST['email'])) {
-      $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-      $query =  $this->database->select('webform_submission_data', 'webform');
+    if ($posted !== '') {
+      $posted = filter_var($posted, FILTER_SANITIZE_EMAIL);
+      $query = $this->database->select('webform_submission_data', 'webform');
       $query->condition('webform.name', 'email', '=');
-      $query->condition('webform.value', $email, '=');
+      $query->condition('webform.value', $posted, '=');
       $query->fields('webform', ['sid']);
       $sid = $query->execute()->fetchField();
       if (!empty($sid)) {
-        $webformSubmission = \drupal::entityTypeManager()->getStorage('webform_submission')->load($sid);
-        $email = $webformSubmission->getData()['email'];
-        $session = \Drupal::request()->getSession();
-        $session->set('usuario_validado', $email);
-      }
-      else {
-        $email = false;
+        $webformSubmission = $this->entityTypeManager()->getStorage('webform_submission')->load($sid);
+        if ($webformSubmission) {
+          $email = $webformSubmission->getData()['email'] ?? $posted;
+          $request->getSession()->set('usuario_validado', $email);
+        }
       }
     }
-    $response['retorno'] = $email;
-    return new JsonResponse( $response );
+
+    return new JsonResponse(['retorno' => $email]);
   }
 
   /**
-   * {@inheritdoc}
+   * Stores the posted e-mail in the session.
    */
   public function sessao(Request $request) {
+    $email = FALSE;
+    $posted = (string) $request->request->get('email', '');
 
-    $email = false;
-    if (!empty($_POST['email'])) {
-      $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-      $session = \Drupal::request()->getSession();
-      $session->set('usuario_validado', $email);
+    if ($posted !== '') {
+      $email = filter_var($posted, FILTER_SANITIZE_EMAIL);
+      $request->getSession()->set('usuario_validado', $email);
     }
-    $response['retorno'] = $email;
-    return new JsonResponse( $response );
+
+    return new JsonResponse(['retorno' => $email]);
   }
 
 }

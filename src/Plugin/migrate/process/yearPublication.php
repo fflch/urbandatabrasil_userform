@@ -22,7 +22,7 @@ class yearPublication extends ProcessPluginBase {
 
     // Plugin logic goes here.
     $year = explode('^c ', $value);
-    return $year[1];
+    return $year[1] ?? NULL;
   }
 
 }

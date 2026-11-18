@@ -26,6 +26,7 @@ class subject extends ProcessPluginBase {
     $pattern = '/\^a /';
     $replacement = '';
 
+    $result = NULL;
     $term_name = preg_replace($pattern, $replacement, $value);
    
     if($term_name) {
@@ -34,9 +35,10 @@ class subject extends ProcessPluginBase {
       }
       else {
         $term = Term::create([
-          'name' => $term_name, 
+          'name' => $term_name,
           'vid'  => $vocabulary,
-        ])->save();
+        ]);
+        $term->save();
       }
       $result = ['target_id' => $term->id()];
     }
@@ -52,9 +54,9 @@ class subject extends ProcessPluginBase {
     if (!empty($name) && !empty($vocabulary)) {
       $properties['name'] = $name;
       $properties['vid'] = $vocabulary;
-      $terms = \Drupal::entityManager()->getStorage('taxonomy_term')->loadByProperties($properties);
+      $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadByProperties($properties);
       $term = reset($terms);
-      $tid = $term->id();
+      $tid = is_object($term) ? $term->id() : NULL;
     }
     return $tid;
   }

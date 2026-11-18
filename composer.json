@@ -11,5 +11,10 @@
     ],
     "keywords": [
     ],
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=7.3",
+        "drupal/core": "^9.4 || ^10 || ^11",
+        "drupal/webform": "*"
+    }
 }

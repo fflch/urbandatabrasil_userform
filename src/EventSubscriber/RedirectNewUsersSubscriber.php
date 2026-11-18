@@ -2,66 +2,90 @@
 
 namespace Drupal\urbandatabrasil_userform\EventSubscriber;
 
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\EventDispatcher\Event;
+use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Path\CurrentPathStack;
+use Drupal\Core\Session\AccountProxyInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
- * Class RedirectNewUsersSubscriber.
+ * Redirects anonymous, non-validated users from /node/add to /cadastre-se.
  */
 class RedirectNewUsersSubscriber implements EventSubscriberInterface {
 
   /**
-   * Drupal\Core\Path\CurrentPathStack definition.
+   * The current path stack.
    *
    * @var \Drupal\Core\Path\CurrentPathStack
    */
   protected $pathCurrent;
 
   /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountProxyInterface
+   */
+  protected $currentUser;
+
+  /**
+   * The messenger service.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
    * Constructs a new RedirectNewUsersSubscriber object.
    */
-  public function __construct(CurrentPathStack $path_current) {
+  public function __construct(CurrentPathStack $path_current, RequestStack $request_stack, AccountProxyInterface $current_user, MessengerInterface $messenger) {
     $this->pathCurrent = $path_current;
+    $this->requestStack = $request_stack;
+    $this->currentUser = $current_user;
+    $this->messenger = $messenger;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
-    $events['kernel.request'] = ['newUserRedirection'];
-    return $events;
+  public static function getSubscribedEvents(): array {
+    return [
+      KernelEvents::REQUEST => ['newUserRedirection'],
+    ];
   }
 
   /**
-   * This method is called when the kernel.request is dispatched.
+   * Called when the kernel.request event is dispatched.
    *
-   * @param \Symfony\Component\EventDispatcher\Event $event
+   * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The dispatched event.
    */
-  public function newUserRedirection(Event $event) {
-
-    $current_path = $this->pathCurrent->getPath();
-    $session = \Drupal::request()->getSession()->get('usuario_validado');
-    $logged_in = \Drupal::currentUser()->isAuthenticated();
-   
-    if ($logged_in) {
+  public function newUserRedirection(RequestEvent $event) {
+    if ($this->currentUser->isAuthenticated()) {
       return;
     }
 
-    if ($current_path != '/node/add') {
+    if ($this->pathCurrent->getPath() != '/node/add') {
       return;
     }
 
-    if (!empty($session)) {
+    $request = $event->getRequest();
+    $usuario_validado = $request->hasSession() ? $request->getSession()->get('usuario_validado') : NULL;
+    if (!empty($usuario_validado)) {
       return;
     }
 
-    \Drupal::messenger()->addMessage('Faça parte da base de dados bibliográficos do UrbanData-Brasil!', 'status', TRUE);
-    $response = new RedirectResponse("/cadastre-se", 301);
-    $event->setResponse($response);
-
+    $this->messenger->addStatus('Faça parte da base de dados bibliográficos do UrbanData-Brasil!', TRUE);
+    $event->setResponse(new RedirectResponse('/cadastre-se', 301));
   }
 
 }

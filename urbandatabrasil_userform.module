@@ -8,7 +8,6 @@
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Component\Utility\Html;
-use Drupal\taxonomy\Entity\Term;
 
 /**
  * Implements hook_help().
@@ -41,7 +40,7 @@ function urbandatabrasil_userform_theme() {
  * {@inheritdoc}
  */
 function urbandatabrasil_userform_page_attachments(&$attachments) {
-  $path = \drupal::request()->getPathInfo();
+  $path = \Drupal::request()->getPathInfo();
   if ($path === '/cadastre-se' || $path === '/form/user') {
     $attachments['#attached']['library'][] = 'urbandatabrasil_userform/form';
   }
@@ -54,13 +53,12 @@ function urbandatabrasil_userform_page_attachments(&$attachments) {
 function urbandatabrasil_userform_node_presave(EntityInterface $node) {
 
   if (($node->isNew())) {
-    $session = \Drupal::request()->getSession();
-    if (method_exists($session, 'get')) {
-      $value = $session->get('usuario_validado');
-      $value = Html::escape($value);
-      if ($node->hasField('field_autor')) {
-        $node->set('field_autor', $value);
-      } 
+    $request = \Drupal::request();
+    if ($request->hasSession()) {
+      $value = $request->getSession()->get('usuario_validado');
+      if (!empty($value) && $node->hasField('field_autor')) {
+        $node->set('field_autor', Html::escape($value));
+      }
     }
   }
 }
